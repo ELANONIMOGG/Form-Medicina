@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lactancia materna, fórmula o mixta — Instrumento de investigación</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg: #F4F7F3;
+    --panel: #FFFFFF;
+    --ink: #1E2A23;
+    --muted: #5C6D63;
+    --line: #DCE4DC;
+    --teal: #1F5F52;
+    --teal-dark: #163F37;
+    --amber: #C4863A;
+    --amber-soft: #F3E3CE;
+    --danger: #B4463A;
+    --radius: 10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', system-ui, sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{
+    font-family:'Source Serif 4', Georgia, serif;
+    font-weight:600;
+    margin:0;
+  }
+  .shell{
+    max-width:680px;
+    margin:0 auto;
+    padding:32px 20px 96px;
+  }
+  header.top{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:28px;
+    border-bottom:1px solid var(--line);
+    padding-bottom:18px;
+  }
+  header.top .mark{
+    font-family:'Source Serif 4', serif;
+    font-weight:600;
+    font-size:1.05rem;
+    color:var(--teal-dark);
+  }
+  header.top .mark span{color:var(--amber);}
+  .top-actions{display:flex;align-items:center;gap:10px;}
+  .btn-dashboard{font-size:.82rem;padding:7px 11px;color:var(--teal-dark);background:#fff;border:1px solid var(--line);}
+  .btn-dashboard:hover{border-color:var(--teal);background:#EEF6F3;}
+  .intro{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-left:4px solid var(--teal);
+    border-radius:var(--radius);
+    padding:22px 24px;
+    margin-bottom:28px;
+  }
+  .intro h1{font-size:1.5rem; color:var(--teal-dark); margin-bottom:10px;}
+  .intro p{color:var(--muted); font-size:0.96rem; margin:0 0 8px;}
+  .intro p:last-child{margin-bottom:0;}
+
+  .progress-wrap{margin-bottom:26px;}
+  .progress-label{
+    display:flex; justify-content:space-between;
+    font-size:0.82rem; color:var(--muted); margin-bottom:8px;
+    font-variant-numeric: tabular-nums;
+  }
+  .progress-track{
+    height:6px; background:#E4EAE3; border-radius:6px; overflow:hidden;
+  }
+  .progress-fill{
+    height:100%; background:var(--teal); border-radius:6px;
+    transition:width .35s ease;
+  }
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:28px 26px 8px;
+  }
+  .card h2{
+    font-size:1.28rem;
+    color:var(--teal-dark);
+    margin-bottom:4px;
+  }
+  .card .section-note{
+    color:var(--muted);
+    font-size:0.88rem;
+    margin:6px 0 22px;
+  }
+
+  .field{
+    margin-bottom:24px;
+    padding-bottom:22px;
+    border-bottom:1px solid #EEF2ED;
+  }
+  .field:last-child{border-bottom:none;}
+  .field-label{
+    font-weight:500;
+    font-size:0.97rem;
+    margin-bottom:12px;
+    color:var(--ink);
+  }
+  .field-label .req{color:var(--amber); margin-left:3px; font-weight:600;}
+  .field-sub{color:var(--muted); font-size:0.85rem; margin:-8px 0 12px;}
+
+  input[type="text"], input[type="number"], textarea{
+    width:100%;
+    font-family:inherit;
+    font-size:0.95rem;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:#FCFDFC;
+    color:var(--ink);
+  }
+  textarea{min-height:80px; resize:vertical;}
+  input:focus, textarea:focus{
+    outline:2px solid var(--amber);
+    outline-offset:1px;
+    border-color:var(--amber);
+  }
+
+  .options{display:flex; flex-direction:column; gap:9px;}
+  .opt{
+    display:flex; align-items:flex-start; gap:10px;
+    padding:9px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    cursor:pointer;
+    background:#FCFDFC;
+    transition:border-color .15s, background .15s;
+  }
+  .opt:hover{border-color:var(--teal);}
+  .opt.checked{border-color:var(--teal); background:#EEF6F3;}
+  .opt input{margin-top:2px; accent-color:var(--teal); width:16px; height:16px; flex-shrink:0;}
+  .opt label{font-size:0.94rem; cursor:pointer;}
+  .opt .other-input{
+    margin-top:8px; width:100%;
+  }
+
+  .conditional{
+    margin-top:10px;
+    padding:14px 14px 4px;
+    border-left:3px solid var(--amber-soft);
+    background:#FDFAF5;
+    border-radius:0 8px 8px 0;
+  }
+  .conditional.hidden{display:none;}
+
+  .subgroup-title{
+    font-family:'Source Serif 4', serif;
+    font-size:1.02rem;
+    color:var(--teal-dark);
+    margin:26px 0 4px;
+  }
+  .subgroup-title.first{margin-top:4px;}
+  .age-band{
+    display:inline-block;
+    font-size:0.78rem;
+    letter-spacing:0.02em;
+    color:var(--teal);
+    background:#EAF3F0;
+    padding:3px 10px;
+    border-radius:20px;
+    margin-bottom:6px;
+  }
+
+  .nav-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:28px;
+  }
+  button{
+    font-family:inherit;
+    font-size:0.95rem;
+    font-weight:500;
+    padding:11px 22px;
+    border-radius:8px;
+    border:1px solid transparent;
+    cursor:pointer;
+    transition:background .15s, border-color .15s, transform .1s;
+  }
+  button:active{transform:translateY(1px);}
+  .btn-primary{background:var(--teal); color:#fff;}
+  .btn-primary:hover{background:var(--teal-dark);}
+  .btn-secondary{background:transparent; color:var(--teal-dark); border-color:var(--line);}
+  .btn-secondary:hover{border-color:var(--teal);}
+  .btn-secondary:disabled{opacity:0.4; cursor:not-allowed;}
+
+  .error-banner{
+    background:#FBEBE8; border:1px solid #EFC3BC; color:var(--danger);
+    padding:10px 14px; border-radius:8px; font-size:0.88rem;
+    margin-top:14px; display:none;
+  }
+  .error-banner.show{display:block;}
+
+  .done-screen{
+    text-align:center; padding:20px 10px 10px;
+  }
+  .done-screen h2{font-size:1.6rem; color:var(--teal-dark); margin-bottom:10px;}
+  .done-screen p{color:var(--muted); margin-bottom:22px;}
+  .done-actions{display:flex; gap:10px; justify-content:center; flex-wrap:wrap;}
+
+  .dashboard{max-width:1100px;margin:0 auto;padding:32px 20px 72px;}
+  .dashboard[hidden]{display:none;}
+  .dashboard-head{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;border-bottom:1px solid var(--line);padding-bottom:20px;margin-bottom:22px;}
+  .dashboard-head h1{font-size:1.8rem;color:var(--teal-dark);}
+  .dashboard-head p{color:var(--muted);margin:6px 0 0;}
+  .dashboard-actions{display:flex;gap:8px;flex-wrap:wrap;}
+  .dashboard-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px;}
+  .dash-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:0 1px 2px rgba(30,42,35,.04);}
+  .metric-label{font-size:.8rem;color:var(--muted);margin-bottom:7px;}
+  .metric-value{font-family:'Source Serif 4',serif;font-size:1.8rem;color:var(--teal-dark);font-weight:600;}
+  .charts-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-bottom:18px;}
+  .chart-card h2,.responses-card h2{font-family:'IBM Plex Sans',sans-serif;font-size:1rem;color:var(--ink);margin-bottom:3px;}
+  .chart-card p{font-size:.8rem;color:var(--muted);margin:0 0 14px;}
+  .chart-wrap{height:260px;position:relative;}
+  .empty-state{color:var(--muted);padding:25px 0;text-align:center;font-size:.9rem;}
+  .table-wrap{overflow-x:auto;}
+  .responses-table{width:100%;border-collapse:collapse;font-size:.83rem;}
+  .responses-table th,.responses-table td{text-align:left;padding:11px 10px;border-bottom:1px solid #EEF2ED;white-space:nowrap;}
+  .responses-table th{font-weight:600;color:var(--muted);font-size:.76rem;text-transform:uppercase;letter-spacing:.03em;}
+  .responses-table td{color:var(--ink);}
+  .btn-delete{font-size:.78rem;padding:6px 9px;color:var(--danger);background:#fff;border:1px solid #EFC3BC;}
+  .btn-delete:hover{background:#FBEBE8;border-color:var(--danger);}
+  .table-muted{color:var(--muted);font-size:.78rem;}
+  @media (max-width:700px){.dashboard-grid,.charts-grid{grid-template-columns:1fr 1fr;}.dashboard-head{flex-direction:column;}}
+
+  footer.foot{
+    text-align:center; color:var(--muted); font-size:0.8rem; margin-top:30px;
+  }
+
+  @media (max-width:480px){
+    header.top{align-items:flex-start;}
+    header.top .mark:last-child{display:none;}
+    .dashboard-grid,.charts-grid{grid-template-columns:1fr;}
+    .card{padding:22px 18px 8px;}
+    .intro{padding:18px 18px;}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <header class="top">
+    <div class="mark">Estudio de alimentación infantil<span>.</span></div>
+    <div class="top-actions">
+      <button class="btn-dashboard" id="open-dashboard">Ver dashboard</button>
+      <div class="mark" style="font-size:0.85rem; color:var(--muted); font-family:'IBM Plex Sans',sans-serif;">Formulario confidencial</div>
+    </div>
+  </header>
+
+  <div class="intro" id="intro-block">
+    <h1>Lactancia materna, fórmula o mixta</h1>
+    <p>Este instrumento recoge información sobre el tipo de alimentación de su bebé durante los primeros seis meses de vida y su relación con el crecimiento y el desarrollo.</p>
+    <p><strong>Instrucciones:</strong> marque la opción que corresponda a la situación de su bebé. En las preguntas donde se indique, puede seleccionar más de una opción. Sus respuestas son confidenciales y se usan únicamente con fines de investigación.</p>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span id="progress-text">Sección 1 de 5</span>
+      <span id="progress-pct"></span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  </div>
+
+  <div class="card" id="card"></div>
+
+  <footer class="foot">Sus respuestas se guardan únicamente en este dispositivo hasta que las descargue o envíe.</footer>
+</div>
+
+<main class="dashboard" id="dashboard" hidden>
+  <div class="dashboard-head">
+    <div>
+      <h1>Dashboard de respuestas</h1>
+      <p>Resumen actualizado de las respuestas almacenadas en esta base local.</p>
+    </div>
+    <div class="dashboard-actions">
+      <button class="btn-secondary" id="back-to-form">Volver al formulario</button>
+      <button class="btn-primary" id="export-all">Exportar datos</button>
+    </div>
+  </div>
+  <div class="dashboard-grid" id="metrics"></div>
+  <div class="charts-grid" id="charts"></div>
+  <section class="dash-card responses-card">
+    <h2>Respuestas registradas</h2>
+    <p class="table-muted">La información permanece en IndexedDB en este dispositivo.</p>
+    <div class="table-wrap" id="responses-table"></div>
+  </section>
+</main>
+
+<script>
+/* ---------------------------------------------------------
+   MODELO DE DATOS
+--------------------------------------------------------- */
+
+const YESNO = ["Sí","No"];
+const YESNO_NOSABE = ["Sí","No","No sabe"];
+const YESNO_NOSEGURA = ["Sí","No","No estoy segura/o"];
+
+function growthBlock(prefix, contexto){
+  // Preguntas repetidas (peso/talla/desarrollo) para las secciones 3, 4 y 5
+  return [
+    {id:prefix+"_cambio_peso", type:"radio", required:true,
+      label:"¿Ha notado cambios importantes en el peso de su bebé desde que inició "+contexto+"?",
+      options:["Aumento adecuado","Aumento lento","Aumento rápido","No sabe"]},
+    {id:prefix+"_peso_adecuado", type:"radio", required:true,
+      label:"¿El niño presentó un aumento de peso adecuado para su edad durante los primeros seis meses de vida?",
+      options:YESNO_NOSABE},
+    {id:prefix+"_talla_adecuada", type:"radio", required:true,
+      label:"¿El niño presentó un crecimiento adecuado de talla para su edad durante los primeros seis meses de vida?",
+      options:YESNO_NOSABE},
+    {id:prefix+"_medico_confirmo", type:"radio", required:true,
+      label:"¿Algún médico o personal de salud le mencionó que el peso y la talla de su bebé eran adecuados para su edad?",
+      options:YESNO_NOSABE},
+    {id:prefix+"_percepcion_crecimiento", type:"radio", required:true,
+      label:"¿Cómo ha percibido el crecimiento de su bebé desde que inició "+contexto+"?",
+      options:["Ha crecido adecuadamente","Ha crecido más lento de lo esperado","Ha crecido más rápido de lo esperado","No sabe"]},
+    {id:prefix+"_hitos_motor", type:"radio", required:true,
+      label:"¿Considera que su bebé ha alcanzado los hitos del desarrollo motor esperados para su edad (por ejemplo, sostener la cabeza, sentarse, gatear o caminar)?",
+      options:YESNO_NOSEGURA},
+    {id:prefix+"_desarrollo_lenguaje", type:"radio", required:true,
+      label:"¿El niño mostró un desarrollo adecuado del lenguaje de acuerdo con su edad?",
+      options:YESNO_NOSEGURA},
+    {id:prefix+"_desarrollo_social", type:"radio", required:true,
+      label:"¿El niño presentó un desarrollo social y emocional adecuado para su edad?",
+      options:YESNO_NOSEGURA},
+    {id:prefix+"_dificultades", type:"checkbox", required:true,
+      label:"Desde que inició "+contexto+", ¿su bebé presentó alguna dificultad relacionada con la alimentación o el crecimiento?",
+      sub:"Puede seleccionar más de una opción.",
+      options:["Ninguna","Bajo aumento de peso","Regurgitaciones o vómitos frecuentes","Estreñimiento","Diarrea","Dificultad para alimentarse",{value:"Otra",freeText:true}]},
+    {id:prefix+"_infeccion_respiratoria", type:"radio", required:true,
+      label:"¿El niño presentó alguna infección respiratoria durante los primeros seis meses de vida?",
+      options:YESNO},
+    {id:prefix+"_infeccion_gastro", type:"radio", required:true,
+      label:"¿El niño presentó alguna infección gastrointestinal durante los primeros seis meses de vida?",
+      options:YESNO},
+    {id:prefix+"_atencion_medica", type:"radio", required:true,
+      label:"¿El niño requirió atención médica por alguna enfermedad durante los primeros seis meses de vida?",
+      options:YESNO},
+  ];
+}
+
+const SECTIONS = {
+
+  s1: {
+    title:"Sección 1 — Datos generales",
+    note:"Estos datos aplican para todos los bebés participantes.",
+    fields:[
+      {id:"peso_nacer", type:"text", required:true, label:"Peso al nacer"},
+      {id:"peso_actual", type:"text", required:true, label:"Peso actual"},
+      {id:"perimetro_cefalico", type:"text", required:true, label:"Perímetro cefálico"},
+      {id:"edad_meses", type:"text", required:true, label:"Edad actual del bebé (en meses)"},
+      {id:"actividades_meses", type:"textarea", required:false, label:"Actividades que realiza de acuerdo a sus meses"},
+    ]
+  },
+
+  s2: {
+    title:"Sección 2 — Tipo de alimentación",
+    note:"",
+    fields:[
+      {id:"edad_inicio", type:"radio", required:true,
+        label:"¿A qué edad comenzó su bebé a recibir este tipo de alimentación?",
+        options:["Desde el nacimiento","Durante el primer mes","2–3 meses","4–5 meses","6 meses"]},
+      {id:"veces_dia", type:"radio", required:true,
+        label:"¿Cuántas veces al día aproximadamente alimenta o alimentaba a su bebé?",
+        options:["1–4 veces","5–7 veces","8–10 veces","Más de 10 veces"]},
+      {id:"tipo_principal", type:"radio", required:true,
+        label:"¿Cuál fue el tipo de alimentación principal que recibió su bebé durante los primeros seis meses de vida?",
+        options:["Lactancia materna exclusiva","Fórmula infantil","Alimentación mixta (leche materna y fórmula)"]},
+    ]
+  },
+
+  s3_lactancia: {
+    title:"Sección 3 — Lactancia materna exclusiva",
+    note:"",
+    fields:[
+      {id:"lac_duracion", type:"radio", required:true,
+        label:"¿Durante cuánto tiempo recibió exclusivamente leche materna, sin agua, fórmula u otros alimentos?",
+        options:["Menos de 1 mes","1–3 meses","4–5 meses","6 meses"]},
+      ...growthBlock("lac","la lactancia materna"),
+      {id:"lac_influyo", type:"radio", required:true,
+        label:"¿Considera que la lactancia materna influyó en el crecimiento y desarrollo del niño?",
+        options:YESNO_NOSABE},
+      {id:"lac_influyo_manera", type:"textarea", required:false,
+        label:"Si respondió \"Sí\", ¿de qué manera considera que influyó?",
+        sub:"Conteste solo si respondió Sí en la pregunta anterior.",
+        showIf:{field:"lac_influyo", equals:"Sí"}},
+    ]
+  },
+
+  s3_formula: {
+    title:"Sección 4 — Fórmula infantil",
+    note:"",
+    fields:[
+      {id:"for_motivo", type:"checkbox", required:true,
+        label:"¿Por qué motivo comenzó a alimentarlo con fórmula?",
+        sub:"Puede seleccionar más de una opción.",
+        options:["No produjo suficiente leche","Dificultad para amamantar","Indicaciones médicas","Decisión personal","Regreso al trabajo/escuela",{value:"Otro",freeText:true}]},
+      {id:"for_recibio_principal", type:"radio", required:true,
+        label:"¿El niño recibió fórmula infantil como alimentación principal durante los primeros seis meses de vida?",
+        options:YESNO},
+      ...growthBlock("for","la alimentación con fórmula"),
+      {id:"for_influyo", type:"radio", required:true,
+        label:"¿Considera que la alimentación con fórmula influyó en el crecimiento y desarrollo del niño?",
+        options:YESNO_NOSABE},
+      {id:"for_influyo_manera", type:"textarea", required:false,
+        label:"Si respondió \"Sí\", ¿de qué manera considera que influyó?",
+        sub:"Conteste solo si respondió Sí en la pregunta anterior.",
+        showIf:{field:"for_influyo", equals:"Sí"}},
+      {id:"for_otro_comentario", type:"checkbox", required:false,
+        label:"Otro",
+        sub:"Marque esta opción si desea agregar cualquier otro comentario que no se haya cubierto arriba.",
+        options:[{value:"Otro",freeText:true}]},
+    ]
+  },
+
+  s3_mixta: {
+    title:"Sección 5 — Alimentación mixta",
+    note:"",
+    fields:[
+      {id:"mix_edad_inicio", type:"radio", required:true,
+        label:"¿A qué edad comenzó a combinar la fórmula con la leche materna?",
+        options:["Desde el nacimiento","Durante el primer mes","2–3 meses","4–5 meses","6 meses"]},
+      {id:"mix_motivo", type:"checkbox", required:true,
+        label:"¿Por qué motivo decidió combinar ambos tipos de alimentación?",
+        sub:"Puede seleccionar más de una opción.",
+        options:["Producción insuficiente de leche","Dificultad para amamantar","Indicaciones médicas","Decisión personal","Regreso al trabajo/escuela",{value:"Otro",freeText:true}]},
+      {id:"mix_proporcion", type:"radio", required:true,
+        label:"Aproximadamente, ¿qué proporción de las tomas de su bebé eran de leche materna frente a fórmula?",
+        options:["Mayormente leche materna","Mitad y mitad","Mayormente fórmula"]},
+      ...growthBlock("mix","la alimentación mixta"),
+      {id:"mix_influyo", type:"radio", required:true,
+        label:"¿Considera que la alimentación mixta influyó en el crecimiento y desarrollo del niño?",
+        options:YESNO_NOSABE},
+      {id:"mix_influyo_manera", type:"textarea", required:false,
+        label:"Si respondió \"Sí\", ¿de qué manera considera que influyó?",
+        sub:"Conteste solo si respondió Sí en la pregunta anterior.",
+        showIf:{field:"mix_influyo", equals:"Sí"}},
+    ]
+  },
+
+  s6: {
+    title:"Sección 6 — Desarrollo infantil",
+    note:"Escala de desarrollo motor por edad. Responda únicamente el bloque que corresponda a la edad actual de su bebé; si ya superó una etapa anterior, también puede completarla si lo recuerda.",
+    fields:[
+      {kind:"heading", text:"0 a 2 meses: Reflejos y control inicial", band:"0–2 meses", first:true},
+      {kind:"subheading", text:"Movimientos generales"},
+      {id:"m02_1", type:"radio", required:false, label:"¿El bebé mueve espontáneamente los brazos y las piernas?", options:YESNO},
+      {id:"m02_2", type:"radio", required:false, label:"¿Los movimientos de sus brazos y piernas parecen todavía descoordinados?", options:YESNO},
+      {id:"m02_3", type:"radio", required:false, label:"¿El bebé mueve ambos brazos y ambas piernas?", options:YESNO},
+      {kind:"subheading", text:"Control de la cabeza"},
+      {id:"m02_4", type:"radio", required:false, label:"¿Cuando está boca arriba, mantiene la cabeza de lado?", options:YESNO},
+      {id:"m02_5", type:"radio", required:false, label:"¿Cuando está boca abajo, puede girar brevemente la cabeza hacia un lado?", options:YESNO},
+      {id:"m02_6", type:"radio", required:false, label:"¿Puede levantar ligeramente la cabeza durante unos segundos cuando está boca abajo?", options:YESNO},
+      {kind:"subheading", text:"Manos y reflejos"},
+      {id:"m02_7", type:"radio", required:false, label:"¿El bebé mantiene las manos cerradas la mayor parte del tiempo?", options:YESNO},
+      {id:"m02_8", type:"radio", required:false, label:"¿Cuando se coloca un dedo en la palma, lo aprieta?", options:YESNO},
+      {id:"m02_9", type:"radio", required:false, label:"¿Cierra la mano automáticamente cuando toca un objeto con la palma?", options:YESNO},
+
+      {kind:"heading", text:"3 a 4 meses: Descubrimiento y fuerza", band:"3–4 meses"},
+      {kind:"subheading", text:"Control de cabeza y tronco"},
+      {id:"m34_1", type:"radio", required:false, label:"¿Cuando está boca abajo, se apoya sobre sus antebrazos?", options:YESNO},
+      {id:"m34_2", type:"radio", required:false, label:"¿Cuando está boca abajo, levanta firmemente la cabeza?", options:YESNO},
+      {id:"m34_3", type:"radio", required:false, label:"¿Puede mantener la cabeza más estable cuando está sentado con apoyo?", options:YESNO},
+      {id:"m34_4", type:"radio", required:false, label:"¿Cuando lo sostienen sentado, mantiene la cabeza más recta?", options:YESNO},
+      {id:"m34_5", type:"radio", required:false, label:"¿Su espalda se mantiene más recta al estar sentado con apoyo?", options:YESNO},
+      {kind:"subheading", text:"Giros"},
+      {id:"m34_6", type:"radio", required:false, label:"¿El bebé intenta girarse hacia un lado cuando está acostado?", options:YESNO},
+      {id:"m34_7", type:"radio", required:false, label:"¿Intenta cambiar de posición por sí mismo cuando está acostado?", options:YESNO},
+      {kind:"subheading", text:"Manos y agarre"},
+      {id:"m34_8", type:"radio", required:false, label:"¿El bebé abre las manos con mayor frecuencia?", options:YESNO},
+      {id:"m34_9", type:"radio", required:false, label:"¿Se lleva las manos a la boca?", options:YESNO},
+      {id:"m34_10", type:"radio", required:false, label:"¿Junta sus dos manos frente a su cuerpo?", options:YESNO},
+      {id:"m34_11", type:"radio", required:false, label:"¿Intenta tocar o golpear juguetes que cuelgan frente a él?", options:YESNO},
+      {id:"m34_12", type:"radio", required:false, label:"¿Intenta agarrar objetos que están cerca de sus manos?", options:YESNO},
+
+      {kind:"heading", text:"5 a 6 meses: Sedestación y manipulación", band:"5–6 meses"},
+      {kind:"subheading", text:"Postura y sedestación"},
+      {id:"m56_1", type:"radio", required:false, label:"¿El bebé puede mantenerse sentado con apoyo?", options:YESNO},
+      {id:"m56_2", type:"radio", required:false, label:"¿Cuando está sentado, utiliza sus manos hacia adelante para apoyarse?", options:YESNO},
+      {id:"m56_3", type:"radio", required:false, label:"¿Puede permanecer sentado durante algunos momentos con poco apoyo?", options:YESNO},
+      {kind:"subheading", text:"Giros y soporte"},
+      {id:"m56_4", type:"radio", required:false, label:"¿El bebé puede darse la vuelta de boca arriba a boca abajo?", options:YESNO},
+      {id:"m56_5", type:"radio", required:false, label:"¿Puede darse la vuelta de boca abajo a boca arriba?", options:YESNO},
+      {id:"m56_6", type:"radio", required:false, label:"¿Cuando está boca abajo, estira los brazos para levantar el cuerpo?", options:YESNO},
+      {id:"m56_7", type:"radio", required:false, label:"¿Cuando está boca abajo, sostiene parte de su peso sobre las manos?", options:YESNO},
+      {kind:"subheading", text:"Agarre y manipulación"},
+      {id:"m56_8", type:"radio", required:false, label:"¿El bebé puede agarrar objetos con toda la mano?", options:YESNO},
+      {id:"m56_9", type:"radio", required:false, label:"¿Puede tomar objetos apretándolos contra la palma con los dedos?", options:YESNO},
+      {id:"m56_10", type:"radio", required:false, label:"¿Puede pasar un objeto de una mano a la otra?", options:YESNO},
+      {id:"m56_11", type:"radio", required:false, label:"¿Se lleva a la boca los objetos que alcanza?", options:YESNO},
+      {id:"m56_12", type:"radio", required:false, label:"¿Intenta alcanzar objetos que están frente a él?", options:YESNO},
+    ]
+  },
+
+  s7: {
+    title:"Sección 7 — Observaciones y cierre",
+    note:"A esta sección llegan las tres ramas del cuestionario.",
+    fields:[
+      {id:"observaciones", type:"textarea", required:false, label:"Observaciones"},
+    ]
+  }
+};
+
+/* ---------------------------------------------------------
+   FLUJO Y ESTADO
+--------------------------------------------------------- */
+const answers = {};
+const DB_NAME = "estudio_alimentacion_db";
+const DB_VERSION = 1;
+const STORE_NAME = "respuestas";
+let flowIndex = 0; // posición dentro de FLOW_IDS
+let FLOW_IDS = ["s1","s2","branch","s6","s7"];
+
+function openDatabase(){
+  return new Promise((resolve,reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if(!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME, {keyPath:"id", autoIncrement:true});
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function deleteResponse(id){
+  const db = await openDatabase();
+  return new Promise((resolve,reject) => {
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    tx.objectStore(STORE_NAME).delete(id);
+    tx.oncomplete = () => { db.close(); resolve(); };
+    tx.onerror = () => { db.close(); reject(tx.error); };
+  });
+}
+
+async function saveResponse(response){
+  const db = await openDatabase();
+  return new Promise((resolve,reject) => {
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    tx.objectStore(STORE_NAME).add(response);
+    tx.oncomplete = () => { db.close(); resolve(); };
+    tx.onerror = () => { db.close(); reject(tx.error); };
+  });
+}
+
+async function getResponses(){
+  const db = await openDatabase();
+  return new Promise((resolve,reject) => {
+    const request = db.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).getAll();
+    request.onsuccess = () => { db.close(); resolve(request.result); };
+    request.onerror = () => { db.close(); reject(request.error); };
+  });
+}
+
+function branchKeyFor(value){
+  if(value === "Lactancia materna exclusiva") return "s3_lactancia";
+  if(value === "Fórmula infantil") return "s3_formula";
+  if(value === "Alimentación mixta (leche materna y fórmula)") return "s3_mixta";
+  return null;
+}
+
+function currentSectionId(){
+  const id = FLOW_IDS[flowIndex];
+  if(id === "branch"){
+    return branchKeyFor(answers["tipo_principal"]) || "s3_lactancia";
+  }
+  return id;
+}
+
+function totalSteps(){ return FLOW_IDS.length; }
+
+/* ---------------------------------------------------------
+   RENDER
+--------------------------------------------------------- */
+const card = document.getElementById("card");
+
+function renderField(f){
+  const wrap = document.createElement("div");
+
+  if(f.kind === "heading"){
+    wrap.className = "";
+    wrap.innerHTML = `<div class="${f.first?'subgroup-title first':'subgroup-title'}" style="margin-top:${f.first?'4px':'30px'};">
+        <span class="age-band">${f.band}</span><br/>${f.text}
+      </div>`;
+    return wrap;
+  }
+  if(f.kind === "subheading"){
+    wrap.innerHTML = `<div style="font-weight:500; color:var(--muted); font-size:0.88rem; margin:14px 0 10px; text-transform:none;">${f.text}</div>`;
+    return wrap;
+  }
+
+  wrap.className = "field";
+  wrap.dataset.fieldId = f.id;
+
+  const showIfHidden = f.showIf ? (answers[f.showIf.field] !== f.showIf.equals) : false;
+
+  const label = document.createElement("div");
+  label.className = "field-label";
+  label.innerHTML = f.label + (f.required ? '<span class="req">*</span>' : '');
+  if(!f.showIf) wrap.appendChild(label);
+
+  if(f.sub && !f.showIf){
+    const sub = document.createElement("div");
+    sub.className = "field-sub";
+    sub.textContent = f.sub;
+    wrap.appendChild(sub);
+  }
+
+  let container = wrap;
+  if(f.showIf){
+    const cond = document.createElement("div");
+    cond.className = "conditional" + (showIfHidden ? " hidden" : "");
+    cond.dataset.showIfField = f.showIf.field;
+    cond.dataset.showIfEquals = f.showIf.equals;
+    cond.appendChild(label);
+    if(f.sub){
+      const sub = document.createElement("div");
+      sub.className = "field-sub";
+      sub.textContent = f.sub;
+      cond.appendChild(sub);
+    }
+    wrap.appendChild(cond);
+    container = cond;
+  }
+
+  if(f.type === "text" || f.type === "number"){
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = answers[f.id] || "";
+    input.addEventListener("input", e => { answers[f.id] = e.target.value; });
+    container.appendChild(input);
+  }
+
+  if(f.type === "textarea"){
+    const ta = document.createElement("textarea");
+    ta.value = answers[f.id] || "";
+    ta.addEventListener("input", e => { answers[f.id] = e.target.value; });
+    container.appendChild(ta);
+  }
+
+  if(f.type === "radio" || f.type === "checkbox"){
+    const opts = document.createElement("div");
+    opts.className = "options";
+    const multi = f.type === "checkbox";
+    const stored = answers[f.id] || (multi ? [] : "");
+    const otherKey = f.id + "__otro_texto";
+
+    f.options.forEach((optRaw, i) => {
+      const isObj = typeof optRaw === "object";
+      const value = isObj ? optRaw.value : optRaw;
+      const freeText = isObj && optRaw.freeText;
+
+      const row = document.createElement("label");
+      row.className = "opt";
+      const input = document.createElement("input");
+      input.type = multi ? "checkbox" : "radio";
+      input.name = f.id;
+      input.value = value;
+
+      const checked = multi ? stored.includes(value) : stored === value;
+      input.checked = checked;
+      if(checked) row.classList.add("checked");
+
+      const txt = document.createElement("span");
+      txt.textContent = value;
+
+      row.appendChild(input);
+      row.appendChild(txt);
+
+      let otherInput = null;
+      if(freeText){
+        otherInput = document.createElement("input");
+        otherInput.type = "text";
+        otherInput.placeholder = "Escriba aquí…";
+        otherInput.className = "other-input";
+        otherInput.value = answers[otherKey] || "";
+        otherInput.style.display = checked ? "block" : "none";
+        otherInput.addEventListener("input", e => { answers[otherKey] = e.target.value; });
+        otherInput.addEventListener("click", e => e.stopPropagation());
+      }
+
+      input.addEventListener("change", () => {
+        if(multi){
+          let arr = answers[f.id] || [];
+          if(input.checked){ arr = [...new Set([...arr, value])]; }
+          else{ arr = arr.filter(v => v !== value); }
+          answers[f.id] = arr;
+        } else {
+          answers[f.id] = value;
+          // limpiar clase checked en hermanos
+          opts.querySelectorAll(".opt").forEach(o => o.classList.remove("checked"));
+          // reevaluar condicionales dependientes de este campo
+          refreshConditionals();
+        }
+        row.classList.toggle("checked", input.checked);
+        if(otherInput) otherInput.style.display = input.checked ? "block" : "none";
+      });
+
+      const col = document.createElement("div");
+      col.style.width = "100%";
+      col.appendChild(row);
+      if(otherInput){
+        const holder = document.createElement("div");
+        holder.style.marginLeft = "26px";
+        holder.appendChild(otherInput);
+        col.appendChild(holder);
+      }
+      opts.appendChild(col);
+    });
+
+    container.appendChild(opts);
+  }
+
+  return wrap;
+}
+
+function refreshConditionals(){
+  document.querySelectorAll(".conditional").forEach(cond => {
+    const field = cond.dataset.showIfField;
+    const equals = cond.dataset.showIfEquals;
+    const show = answers[field] === equals;
+    cond.classList.toggle("hidden", !show);
+  });
+}
+
+function renderSection(){
+  const secId = currentSectionId();
+  const sec = SECTIONS[secId];
+  card.innerHTML = "";
+
+  const h2 = document.createElement("h2");
+  h2.textContent = sec.title;
+  card.appendChild(h2);
+
+  if(sec.note){
+    const note = document.createElement("div");
+    note.className = "section-note";
+    note.textContent = sec.note;
+    card.appendChild(note);
+  } else {
+    const spacer = document.createElement("div"); spacer.style.height="14px";
+    card.appendChild(spacer);
+  }
+
+  sec.fields.forEach(f => card.appendChild(renderField(f)));
+
+  const err = document.createElement("div");
+  err.className = "error-banner";
+  err.id = "error-banner";
+  err.textContent = "Por favor responda las preguntas marcadas con * antes de continuar.";
+  card.appendChild(err);
+
+  const nav = document.createElement("div");
+  nav.className = "nav-row";
+  const back = document.createElement("button");
+  back.className = "btn-secondary";
+  back.textContent = "Atrás";
+  back.disabled = flowIndex === 0;
+  back.onclick = () => { flowIndex--; renderSection(); updateProgress(); window.scrollTo({top:0,behavior:"smooth"}); };
+
+  const next = document.createElement("button");
+  next.className = "btn-primary";
+  next.textContent = (flowIndex === FLOW_IDS.length - 1) ? "Finalizar" : "Siguiente";
+  next.onclick = () => {
+    if(!validateSection(sec)){
+      document.getElementById("error-banner").classList.add("show");
+      return;
+    }
+    if(flowIndex === FLOW_IDS.length - 1){
+      finish();
+    } else {
+      flowIndex++;
+      renderSection();
+      updateProgress();
+      window.scrollTo({top:0,behavior:"smooth"});
+    }
+  };
+
+  nav.appendChild(back);
+  nav.appendChild(next);
+  card.appendChild(nav);
+}
+
+function validateSection(sec){
+  let ok = true;
+  sec.fields.forEach(f => {
+    if(!f.id || !f.required) return;
+    if(f.showIf && answers[f.showIf.field] !== f.showIf.equals) return; // no visible, no valida
+    const v = answers[f.id];
+    if(f.type === "checkbox"){
+      if(!v || v.length === 0) ok = false;
+    } else if(f.type === "radio"){
+      if(!v) ok = false;
+    } else {
+      if(!v || String(v).trim() === "") ok = false;
+    }
+  });
+  return ok;
+}
+
+function updateProgress(){
+  const step = flowIndex + 1;
+  const total = totalSteps();
+  document.getElementById("progress-text").textContent = "Sección " + step + " de " + total;
+  document.getElementById("progress-pct").textContent = Math.round((step/total)*100) + "%";
+  document.getElementById("progress-fill").style.width = (step/total*100) + "%";
+}
+
+async function finish(){
+  document.getElementById("intro-block").style.display = "none";
+  document.querySelector(".progress-wrap").style.display = "none";
+
+  const response = {fecha:new Date().toISOString(), respuestas:JSON.parse(JSON.stringify(answers))};
+  try{
+    await saveResponse(response);
+  }catch(e){ console.error("No se pudo guardar en IndexedDB", e); }
+
+  card.innerHTML = "";
+  const doneWrap = document.createElement("div");
+  doneWrap.className = "done-screen";
+  doneWrap.innerHTML = `
+    <h2>Gracias por su participación</h2>
+    <p>Sus respuestas se registraron correctamente. Puede descargar una copia para sus registros o para enviarla a la persona responsable del estudio.</p>
+  `;
+  const actions = document.createElement("div");
+  actions.className = "done-actions";
+
+  const dl = document.createElement("button");
+  dl.className = "btn-primary";
+  dl.textContent = "Descargar mis respuestas (JSON)";
+  dl.onclick = downloadJSON;
+
+  const restart = document.createElement("button");
+  restart.className = "btn-secondary";
+  restart.textContent = "Registrar otro bebé";
+  restart.onclick = () => location.reload();
+
+  actions.appendChild(dl);
+  actions.appendChild(restart);
+  doneWrap.appendChild(actions);
+  card.appendChild(doneWrap);
+}
+
+let chartInstances = [];
+
+function countValues(rows, field){
+  const counts = {};
+  rows.forEach(row => {
+    const value = row.respuestas[field];
+    if(Array.isArray(value)) value.forEach(item => { counts[item] = (counts[item] || 0) + 1; });
+    else if(value) counts[value] = (counts[value] || 0) + 1;
+  });
+  return counts;
+}
+
+function countAcrossFields(rows, fields){
+  const counts = {};
+  rows.forEach(row => fields.forEach(field => {
+    const value = row.respuestas[field];
+    if(value) counts[value] = (counts[value] || 0) + 1;
+  }));
+  return counts;
+}
+
+function addChart(title, description, counts, type){
+  const card = document.createElement("section");
+  card.className = "dash-card chart-card";
+  card.innerHTML = `<h2>${title}</h2><p>${description}</p><div class="chart-wrap"><canvas></canvas></div>`;
+  document.getElementById("charts").appendChild(card);
+  const labels = Object.keys(counts);
+  const values = Object.values(counts);
+  chartInstances.push(new Chart(card.querySelector("canvas"), {
+    type,
+    data:{labels,datasets:[{data:values,backgroundColor:["#1F5F52","#C4863A","#77A99B","#D9A66A","#8B9F91","#B4463A"],borderWidth:1,borderColor:"#fff"}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:type === "doughnut" ? "right" : "bottom",labels:{font:{family:"IBM Plex Sans"}}}},scales:type === "doughnut" ? {} : {y:{beginAtZero:true,ticks:{precision:0}}}}
+  }));
+}
+
+function renderDashboard(rows){
+  chartInstances.forEach(chart => chart.destroy());
+  chartInstances = [];
+  const metrics = document.getElementById("metrics");
+  const charts = document.getElementById("charts");
+  metrics.innerHTML = ""; charts.innerHTML = "";
+  const principal = countValues(rows,"tipo_principal");
+  [["Respuestas",rows.length],["Lactancia exclusiva",principal["Lactancia materna exclusiva"] || 0],["Fórmula infantil",principal["Fórmula infantil"] || 0],["Alimentación mixta",principal["Alimentación mixta (leche materna y fórmula)"] || 0]].forEach(([label,value]) => {
+    const card = document.createElement("div"); card.className="dash-card"; card.innerHTML=`<div class="metric-label">${label}</div><div class="metric-value">${value}</div>`; metrics.appendChild(card);
+  });
+  if(!rows.length) charts.innerHTML = '<div class="dash-card empty-state">Aún no hay respuestas registradas.</div>';
+  else {
+    addChart("Tipo de alimentación","Distribución de la respuesta principal.",principal,"doughnut");
+    addChart("Crecimiento adecuado","Respuesta sobre el peso durante los primeros seis meses.",countAcrossFields(rows,["lac_peso_adecuado","for_peso_adecuado","mix_peso_adecuado"]),"bar");
+    addChart("Edad de inicio","Cuándo comenzó el tipo de alimentación principal.",countValues(rows,"edad_inicio"),"bar");
+    addChart("Dificultades reportadas","Respuestas múltiples sobre alimentación o crecimiento.",countValues(rows,"lac_dificultades"),"doughnut");
+  }
+  const table = document.getElementById("responses-table");
+  if(!rows.length){ table.innerHTML='<div class="empty-state">No hay datos para mostrar.</div>'; return; }
+  table.innerHTML = `<table class="responses-table"><thead><tr><th>Fecha</th><th>Alimentación</th><th>Edad de inicio</th><th>Peso adecuado</th><th>Observaciones</th></tr></thead><tbody>${rows.slice().reverse().map(row => { const a=row.respuestas; return `<tr><td>${new Date(row.fecha).toLocaleString("es-ES")}</td><td>${a.tipo_principal || "-"}</td><td>${a.edad_inicio || "-"}</td><td>${a.lac_peso_adecuado || a.for_peso_adecuado || a.mix_peso_adecuado || "-"}</td><td>${a.observaciones || "-"}</td></tr>`; }).join("")}</tbody></table>`;
+  table.innerHTML = `<table class="responses-table"><thead><tr><th>Fecha</th><th>Alimentación</th><th>Edad de inicio</th><th>Peso adecuado</th><th>Observaciones</th><th>Acciones</th></tr></thead><tbody>${rows.slice().reverse().map(row => { const a=row.respuestas; return `<tr><td>${new Date(row.fecha).toLocaleString("es-ES")}</td><td>${a.tipo_principal || "-"}</td><td>${a.edad_inicio || "-"}</td><td>${a.lac_peso_adecuado || a.for_peso_adecuado || a.mix_peso_adecuado || "-"}</td><td>${a.observaciones || "-"}</td><td><button class="btn-delete" data-response-id="${row.id}">Borrar</button></td></tr>`; }).join("")}</tbody></table>`;
+  table.querySelectorAll(".btn-delete").forEach(button => {
+    button.addEventListener("click", async () => {
+      if(!confirm("¿Desea borrar este formulario enviado? Esta acción no se puede deshacer.")) return;
+      button.disabled = true;
+      try{ await deleteResponse(Number(button.dataset.responseId)); renderDashboard(await getResponses()); }
+      catch(e){ button.disabled = false; alert("No se pudo borrar el formulario."); }
+    });
+  });
+}
+
+async function showDashboard(){
+  document.querySelector(".shell").hidden = true;
+  document.getElementById("dashboard").hidden = false;
+  try{ renderDashboard(await getResponses()); }
+  catch(e){ document.getElementById("charts").innerHTML='<div class="dash-card empty-state">No se pudo abrir la base local.</div>'; }
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+document.getElementById("open-dashboard").onclick = showDashboard;
+document.getElementById("back-to-form").onclick = () => { document.querySelector(".shell").hidden=false; document.getElementById("dashboard").hidden=true; };
+document.getElementById("export-all").onclick = async () => {
+  const blob = new Blob([JSON.stringify(await getResponses(),null,2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href=url; link.download="respuestas_estudio.json"; link.click(); URL.revokeObjectURL(url);
+};
+
+function downloadJSON(){
+  const blob = new Blob([JSON.stringify(answers, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "respuesta_" + Date.now() + ".json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+renderSection();
+updateProgress();
+</script>
+</body>
+</html>
