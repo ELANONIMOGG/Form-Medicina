@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <style>
   :root{
     --bg: #F4F7F3;
@@ -282,14 +283,14 @@
 
   <div class="card" id="card"></div>
 
-  <footer class="foot">Sus respuestas se guardan únicamente en este dispositivo hasta que las descargue o envíe.</footer>
+  <footer class="foot">Sus respuestas se envían de forma segura al sistema de investigación o se descargan en su dispositivo.</footer>
 </div>
 
 <main class="dashboard" id="dashboard" hidden>
   <div class="dashboard-head">
     <div>
       <h1>Dashboard de respuestas</h1>
-      <p>Resumen actualizado de las respuestas almacenadas en esta base local.</p>
+      <p>Resumen actualizado de las respuestas recibidas por el sistema.</p>
     </div>
     <div class="dashboard-actions">
       <button class="btn-secondary" id="back-to-form">Volver al formulario</button>
@@ -300,7 +301,7 @@
   <div class="charts-grid" id="charts"></div>
   <section class="dash-card responses-card">
     <h2>Respuestas registradas</h2>
-    <p class="table-muted">La información permanece en IndexedDB en este dispositivo.</p>
+    <p class="table-muted">La información procede del almacenamiento central configurado para este formulario.</p>
     <div class="table-wrap" id="responses-table"></div>
   </section>
 </main>
@@ -523,51 +524,28 @@ const SECTIONS = {
    FLUJO Y ESTADO
 --------------------------------------------------------- */
 const answers = {};
-const DB_NAME = "estudio_alimentacion_db";
-const DB_VERSION = 1;
-const STORE_NAME = "respuestas";
+const API_URL = "https://script.google.com/macros/s/AKfycbx5VbiIGR6vlQ9ssmZbfAUj8YLBHGzL7E8YQzn4crgKj1rCqqgN9TKhbXnxanZsDxk/exec";
 let flowIndex = 0; // posición dentro de FLOW_IDS
 let FLOW_IDS = ["s1","s2","branch","s6","s7"];
 
-function openDatabase(){
-  return new Promise((resolve,reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onupgradeneeded = () => {
-      const db = request.result;
-      if(!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME, {keyPath:"id", autoIncrement:true});
-    };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
-
 async function deleteResponse(id){
-  const db = await openDatabase();
-  return new Promise((resolve,reject) => {
-    const tx = db.transaction(STORE_NAME, "readwrite");
-    tx.objectStore(STORE_NAME).delete(id);
-    tx.oncomplete = () => { db.close(); resolve(); };
-    tx.onerror = () => { db.close(); reject(tx.error); };
-  });
+  if(!API_URL) throw new Error("No hay una API configurada");
+  const response = await fetch(API_URL, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify({action:"delete", id})});
+  if(!response.ok) throw new Error("No se pudo borrar la respuesta");
 }
 
 async function saveResponse(response){
-  const db = await openDatabase();
-  return new Promise((resolve,reject) => {
-    const tx = db.transaction(STORE_NAME, "readwrite");
-    tx.objectStore(STORE_NAME).add(response);
-    tx.oncomplete = () => { db.close(); resolve(); };
-    tx.onerror = () => { db.close(); reject(tx.error); };
-  });
+  if(!API_URL) return null;
+  const result = await fetch(API_URL, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify(response)});
+  if(!result.ok) throw new Error("No se pudo enviar la respuesta");
+  return result.json();
 }
 
 async function getResponses(){
-  const db = await openDatabase();
-  return new Promise((resolve,reject) => {
-    const request = db.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).getAll();
-    request.onsuccess = () => { db.close(); resolve(request.result); };
-    request.onerror = () => { db.close(); reject(request.error); };
-  });
+  if(!API_URL) return [];
+  const result = await fetch(API_URL);
+  if(!result.ok) throw new Error("No se pudieron cargar las respuestas");
+  return result.json();
 }
 
 function branchKeyFor(value){
@@ -831,22 +809,22 @@ async function finish(){
   const response = {fecha:new Date().toISOString(), respuestas:JSON.parse(JSON.stringify(answers))};
   try{
     await saveResponse(response);
-  }catch(e){ console.error("No se pudo guardar en IndexedDB", e); }
+  }catch(e){ console.error("No se pudo enviar la respuesta", e); }
 
   card.innerHTML = "";
   const doneWrap = document.createElement("div");
   doneWrap.className = "done-screen";
   doneWrap.innerHTML = `
     <h2>Gracias por su participación</h2>
-    <p>Sus respuestas se registraron correctamente. Puede descargar una copia para sus registros o para enviarla a la persona responsable del estudio.</p>
+    <p>Sus respuestas se registraron correctamente. Puede descargar una copia en Excel para sus registros.</p>
   `;
   const actions = document.createElement("div");
   actions.className = "done-actions";
 
   const dl = document.createElement("button");
   dl.className = "btn-primary";
-  dl.textContent = "Descargar mis respuestas (JSON)";
-  dl.onclick = downloadJSON;
+  dl.textContent = "Descargar mis respuestas (Excel)";
+  dl.onclick = () => downloadExcel([response], "mi_respuesta");
 
   const restart = document.createElement("button");
   restart.className = "btn-secondary";
@@ -929,27 +907,37 @@ async function showDashboard(){
   document.querySelector(".shell").hidden = true;
   document.getElementById("dashboard").hidden = false;
   try{ renderDashboard(await getResponses()); }
-  catch(e){ document.getElementById("charts").innerHTML='<div class="dash-card empty-state">No se pudo abrir la base local.</div>'; }
+  catch(e){ document.getElementById("charts").innerHTML='<div class="dash-card empty-state">No se pudieron cargar las respuestas del sistema.</div>'; }
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
 document.getElementById("open-dashboard").onclick = showDashboard;
 document.getElementById("back-to-form").onclick = () => { document.querySelector(".shell").hidden=false; document.getElementById("dashboard").hidden=true; };
 document.getElementById("export-all").onclick = async () => {
-  const blob = new Blob([JSON.stringify(await getResponses(),null,2)], {type:"application/json"});
-  const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href=url; link.download="respuestas_estudio.json"; link.click(); URL.revokeObjectURL(url);
+  try{ downloadExcel(await getResponses(), "respuestas_estudio"); }
+  catch(e){ alert("No se pudieron exportar las respuestas."); }
 };
 
-function downloadJSON(){
-  const blob = new Blob([JSON.stringify(answers, null, 2)], {type:"application/json"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "respuesta_" + Date.now() + ".json";
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
+function csvValue(value){
+  if(Array.isArray(value)) return value.join(", ");
+  if(value === null || value === undefined) return "";
+  return String(value);
+}
+
+function downloadExcel(rows, filename){
+  if(!rows.length){ alert("No hay respuestas para exportar."); return; }
+  const fields = [...new Set(rows.flatMap(row => Object.keys(row.respuestas || {})))];
+  const headers = ["Fecha", ...fields];
+  const data = rows.map(row => {
+    const values = {Fecha:new Date(row.fecha).toLocaleString("es-ES")};
+    fields.forEach(field => { values[field] = csvValue(row.respuestas[field]); });
+    return values;
+  });
+  const worksheet = XLSX.utils.json_to_sheet(data, {header:headers});
+  worksheet["!cols"] = headers.map(header => ({wch:Math.min(Math.max(header.length + 2, 14), 36)}));
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Respuestas");
+  XLSX.writeFile(workbook, filename + ".xlsx");
 }
 
 renderSection();
