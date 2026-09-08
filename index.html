@@ -524,7 +524,7 @@ const SECTIONS = {
    FLUJO Y ESTADO
 --------------------------------------------------------- */
 const answers = {};
-const API_URL = "https://script.google.com/macros/s/AKfycbx5VbiIGR6vlQ9ssmZbfAUj8YLBHGzL7E8YQzn4crgKj1rCqqgN9TKhbXnxanZsDxk/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyK5tmWbNKo2_EdCiuD7QSqktgSwn5-ilvgZCZZb2x7QaUjar1JRsE4FBF1-RC8CPwnPw/exec";
 let flowIndex = 0; // posición dentro de FLOW_IDS
 let FLOW_IDS = ["s1","s2","branch","s6","s7"];
 
@@ -897,7 +897,7 @@ function renderDashboard(rows){
     button.addEventListener("click", async () => {
       if(!confirm("¿Desea borrar este formulario enviado? Esta acción no se puede deshacer.")) return;
       button.disabled = true;
-      try{ await deleteResponse(Number(button.dataset.responseId)); renderDashboard(await getResponses()); }
+      try{ await deleteResponse(button.dataset.responseId); renderDashboard(await getResponses()); }
       catch(e){ button.disabled = false; alert("No se pudo borrar el formulario."); }
     });
   });
