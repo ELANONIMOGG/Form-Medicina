@@ -367,7 +367,7 @@ const SECTIONS = {
       {id:"peso_nacer", type:"text", required:true, label:"Peso al nacer"},
       {id:"peso_actual", type:"text", required:true, label:"Peso actual"},
       {id:"perimetro_cefalico", type:"text", required:true, label:"Perímetro cefálico"},
-      {id:"edad_meses", type:"text", required:true, label:"Edad actual del bebé (en meses)"},
+      {id:"edad_meses", type:"number", required:true, min:0, max:6, label:"Edad actual del bebé (en meses)"},
       {id:"actividades_meses", type:"textarea", required:false, label:"Actividades que realiza de acuerdo a sus meses"},
     ]
   },
@@ -563,6 +563,26 @@ function currentSectionId(){
   return id;
 }
 
+function developmentAgeBand(){
+  const age = Number.parseInt(answers.edad_meses, 10);
+  if(age >= 0 && age <= 2) return "0–2 meses";
+  if(age >= 3 && age <= 4) return "3–4 meses";
+  if(age >= 5 && age <= 6) return "5–6 meses";
+  return null;
+}
+
+function fieldsForSection(secId){
+  if(secId !== "s6") return SECTIONS[secId].fields;
+  const band = developmentAgeBand();
+  const fields = [];
+  let inSelectedBand = false;
+  SECTIONS[secId].fields.forEach(field => {
+    if(field.kind === "heading") inSelectedBand = field.band === band;
+    if(inSelectedBand) fields.push(field);
+  });
+  return fields;
+}
+
 function totalSteps(){ return FLOW_IDS.length; }
 
 /* ---------------------------------------------------------
@@ -621,7 +641,12 @@ function renderField(f){
 
   if(f.type === "text" || f.type === "number"){
     const input = document.createElement("input");
-    input.type = "text";
+    input.type = f.type;
+    if(f.type === "number"){
+      input.min = f.min;
+      input.max = f.max;
+      input.step = "1";
+    }
     input.value = answers[f.id] || "";
     input.addEventListener("input", e => { answers[f.id] = e.target.value; });
     container.appendChild(input);
@@ -738,7 +763,7 @@ function renderSection(){
     card.appendChild(spacer);
   }
 
-  sec.fields.forEach(f => card.appendChild(renderField(f)));
+  fieldsForSection(secId).forEach(f => card.appendChild(renderField(f)));
 
   const err = document.createElement("div");
   err.className = "error-banner";
@@ -779,7 +804,8 @@ function renderSection(){
 
 function validateSection(sec){
   let ok = true;
-  sec.fields.forEach(f => {
+  const fields = fieldsForSection(currentSectionId());
+  fields.forEach(f => {
     if(!f.id || !f.required) return;
     if(f.showIf && answers[f.showIf.field] !== f.showIf.equals) return; // no visible, no valida
     const v = answers[f.id];
@@ -791,6 +817,7 @@ function validateSection(sec){
       if(!v || String(v).trim() === "") ok = false;
     }
   });
+  if(sec === SECTIONS.s1 && !developmentAgeBand()) ok = false;
   return ok;
 }
 
